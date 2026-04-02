@@ -1,4 +1,13 @@
 import React from "react";
+
+// 1. Button → Message Toggle
+
+// Goal: Practice state & instant feedback
+// 👉 Build:
+
+// A button “Show message”
+// When clicked → show/hide a text
+
 export default function ToggleMessage() {
 
 
