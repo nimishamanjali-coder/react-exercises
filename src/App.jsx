@@ -1,13 +1,8 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
-import ToggleMessage from './MessageToggle'
-import CharExceedWarning from './CharExceedWarning'
+import "./App.css";
+import ToggleMessage from "./MessageToggle";
+import CharExceedWarning from "./CharExceedWarning";
+import SwitchToggle from "./SwitchToggle";
 function App() {
-
-
   return (
     <div>
       <>Hello world!</>
@@ -15,8 +10,9 @@ function App() {
       <br />
 
       <CharExceedWarning />
+      <SwitchToggle></SwitchToggle>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
