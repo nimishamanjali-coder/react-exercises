@@ -7,8 +7,6 @@ import ToggleMessage from './MessageToggle'
 import CharExceedWarning from './CharExceedWarning'
 import Profile from './Profile'
 function App() {
-
-
   return (
     <div>
 
@@ -18,4 +16,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
