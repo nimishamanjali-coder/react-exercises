@@ -5,17 +5,16 @@ import heroImg from './assets/hero.png'
 import './App.css'
 import ToggleMessage from './MessageToggle'
 import CharExceedWarning from './CharExceedWarning'
+import Profile from './Profile'
 function App() {
 
 
   return (
     <div>
-      <>Hello world!</>
-      <ToggleMessage />
-      <br />
 
-      <CharExceedWarning />
+      <Profile name="Sara" profession="Management" yearsOfExperience={5} isAvailable={true} />
     </div>
+
   )
 }
 
