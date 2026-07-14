@@ -2,6 +2,7 @@ import { useState } from "react";
 export default function Profile({ name, profession, yearsOfExperience, isAvailable }) {
 
     const [clicked, setClicked] = useState(0);
+    const [message, setMessage] = useState('');
     const [clickedContact, setClickedContact] = useState('');
     function handleClick() {
         setClicked((previousclicked) => previousclicked + 1);
@@ -16,6 +17,8 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
             <button onClick={handleClick}>viewed {clicked} {clicked === 1 ? 'time' : 'times'} </button>
             {isAvailable && <p><button onClick={() => setClickedContact(`Contacting ${name}`)}> Contact </button></p>}
             {clickedContact && <p>{clickedContact}</p>}
+            <input value={message} onChange={(event) => setMessage(event.target.value)}></input>
+            {message && <p>Message : {message}</p>}
 
         </div>
     );
