@@ -8,6 +8,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
         setClicked((previousclicked) => previousclicked + 1);
         alert(`Viewing ${name}'s profile`);
     }
+    const skills = ["Java", "React", "Spring Boot"];
 
     return (
 
@@ -20,6 +21,9 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
             <input value={message} onChange={(event) => setMessage(event.target.value)}></input>
             {message && <p>Message : {message}</p>}
 
+            <ul>
+                {skills.map(i => <li key={i}>{i}</li>)}
+            </ul>
         </div>
     );
 }
