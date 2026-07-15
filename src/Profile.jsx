@@ -69,6 +69,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
 
                 </div>)}
 
+            {/* how to add with add button */}
             {/* <div>
                 <input value={newName} onChange={(event) => setNewName
                     (event.target.value)}></input>
