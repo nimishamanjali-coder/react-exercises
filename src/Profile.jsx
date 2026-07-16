@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import './Profile.css'
 export default function Profile({ name, profession, yearsOfExperience, isAvailable }) {
 
@@ -17,15 +17,29 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
     //     { id: 3, name: "Der", profession: "ELEC" }
     // ]; // simple const variable will not change once defined. to make it dynamic, we add state
 
-    const [employees, setEmployees] = useState(
-        [
+    // without useeffect
+    // const [employees, setEmployees] = useState(
+    //     [
+    //         { id: 1, name: "Nimi", profession: "IT" },
+    //         { id: 2, name: "Nay", profession: "AI" },
+    //         { id: 3, name: "Der", profession: "ELEC" }
+    //     ]
+
+
+    // );
+    //   A useful rule:
+
+    // User clicks Add/Edit/Delete: call the backend in the handler.
+    // Page loads and needs employee data: use useEffect.
+    // A value changes and should automatically trigger backend work: useEffect may be appropriate, but avoid using it for actions that already have a clear event handler.
+    const [employees, setEmployees] = useState(() => {
+        const savedEmployees = localStorage.getItem("employees");
+        return savedEmployees ? JSON.parse(savedEmployees) : [
             { id: 1, name: "Nimi", profession: "IT" },
             { id: 2, name: "Nay", profession: "AI" },
             { id: 3, name: "Der", profession: "ELEC" }
-        ]
-
-
-    );
+        ];
+    });
     const [newName, setNewName] = useState("");
     const [newProfession, setNewProfession] = useState("");
     const [error, setError] = useState("");
@@ -86,6 +100,11 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
 
     // filteredEmployees is called derived data because it is derived from employees and searchTerm.
     const filteredEmployees = employees.filter((emp) => emp.name.toLowerCase().includes(search.toLowerCase()));
+
+
+    useEffect(() => {
+        localStorage.setItem("employees", JSON.stringify(employees));
+    }, [employees]);
     return (
 
         <div>
