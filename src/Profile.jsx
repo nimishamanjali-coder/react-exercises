@@ -28,10 +28,39 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
     );
     const [newName, setNewName] = useState("");
     const [newProfession, setNewProfession] = useState("");
+    const [error, setError] = useState("");
+    const [search, setSearch] = useState("");
+    const [editingId, setEditingId] = useState(null);
+    const [editName, setEditName] = useState('');
+    const [editProfession, setEditProfession] = useState('');
+
+    function startEditing(emp) {
+        setEditingId(emp.id);
+        setEditName(emp.name);
+        setEditProfession(emp.profession);
+    }
+    function cancelEditing() {
+        setEditingId(null);
+        setEditName("");
+        setEditProfession("");
+    }
+    function handleEdit(event) {
+        event.preventDefault();
+        if (editName.trim() === "" || editProfession.trim() === "") {
+            return;
+        }
+
+        setEmployees((prevEmp) => prevEmp.map((emp) => emp.id === editingId ? {
+            ...emp,
+            name: editName,
+            profession: editProfession
+        } : emp));
+        cancelEditing();
+
+    }
 
     function addEmployee(nname, nprofession) {
-        if (nname.trim() === '' || nprofession.trim() === '')
-            return;
+
         setEmployees((prevEmp) => [...prevEmp, { id: Date.now(), name: nname, profession: nprofession }]);
         setNewName(''); setNewProfession('');
 
@@ -41,9 +70,22 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
     }
     function handleSubmit(event) {
         event.preventDefault();
+        if (newName.trim() === '' || newProfession.trim() === '') {
+            setError('Please enter both name and profession.');
+            return;
+        }
 
+        setError('');
         addEmployee(newName, newProfession);
     }
+
+    //     A useful rule:
+
+    // Use state for values that change through user actions or events.
+    // Use a normal variable for values that can be calculated from props or state.
+
+    // filteredEmployees is called derived data because it is derived from employees and searchTerm.
+    const filteredEmployees = employees.filter((emp) => emp.name.toLowerCase().includes(search.toLowerCase()));
     return (
 
         <div>
@@ -59,7 +101,10 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
                 {skills.map(i => <li key={i}>{i}</li>)}
             </ul>
 
-            {employees.map((emp) =>
+
+            <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search employees"></input>
+
+            {filteredEmployees.map((emp) =>
                 <div className="employee-card" key={emp.id}>
                     <div >
                         <h3>{emp.name}</h3>
@@ -67,8 +112,9 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
                     </div>
                     <button onClick={() => deleteEmployee(emp.id)}>Delete</button>
 
+                    <button onClick={() => startEditing(emp)}>Edit</button>
                 </div>)}
-
+            {editingId && <p>Editing employee ID: {editingId}</p>}
             {/* how to add with add button */}
             {/* <div>
                 <input value={newName} onChange={(event) => setNewName
@@ -81,8 +127,20 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
                 <input value={newName} onChange={(event) => setNewName
                     (event.target.value)}></input>
                 <input value={newProfession} onChange={(event) => setNewProfession(event.target.value)}></input>
-                <button type="submit">Submit</button>
+                <button type="submit">ADD</button>
+                {error && <p>{error}</p>}
             </form>
+
+            {editingId &&
+                <form onSubmit={handleEdit}>
+                    <input value={editName} onChange={(event) => setEditName(event.target.value)} ></input>
+                    <input value={editProfession} onChange={(event) => setEditProfession(event.target.value)} ></input>
+                    <button type="submit">Save</button>
+                    <button type="button" onClick={cancelEditing}>
+                        Cancel
+                    </button>
+                </form>
+            }
 
         </div>
     );
