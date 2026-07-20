@@ -1,5 +1,20 @@
 import { useState, useEffect } from "react";
 import './Profile.css'
+
+
+function EmployeeCard({ employee, onDelete, onEdit }) {
+    return (
+        <div className="employee-card" >
+            <div >
+                <h3>{employee.name}</h3>
+                <p>{employee.profession}</p>
+            </div>
+            <button onClick={() => onDelete(employee.id)}>Delete</button>
+
+            <button onClick={() => onEdit(employee)}>Edit</button>
+        </div>
+    );
+}
 export default function Profile({ name, profession, yearsOfExperience, isAvailable }) {
 
     const [clicked, setClicked] = useState(0);
@@ -47,6 +62,9 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
     const [editingId, setEditingId] = useState(null);
     const [editName, setEditName] = useState('');
     const [editProfession, setEditProfession] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [loadError, setLoadError] = useState("");
+
 
     function startEditing(emp) {
         setEditingId(emp.id);
@@ -105,6 +123,51 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
     useEffect(() => {
         localStorage.setItem("employees", JSON.stringify(employees));
     }, [employees]);
+
+
+    function simulateLoading() {
+        setLoading(true);
+        setLoadError("");
+        setTimeout(() => {
+            setLoading(false);
+        }, 2000);
+    }
+    function simulateError() {
+        setLoading(true);
+        setLoadError("");
+
+        setTimeout(() => {
+            setLoading(false);
+            setLoadError("Failed to load employees.");
+        }, 2000);
+    }
+
+    useEffect(() => {
+        async function loadEmployees() {
+            setLoading(true);
+            setLoadError("");
+            try {
+                const response = await fetch("https://jsonplaceholder.typicode.com/users");
+                if (!response.ok) {
+                    throw new Error("Failed to load employees.");
+                }
+                const data = await response.json();
+                const convertedEmployees = data.map((user) => ({
+                    id: user.id,
+                    name: user.name,
+                    profession: user.company.name
+                }));
+                setEmployees(convertedEmployees);
+            }
+            catch (error) {
+                setLoadError(error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadEmployees();
+    }, []);
+
     return (
 
         <div>
@@ -124,15 +187,9 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search employees"></input>
 
             {filteredEmployees.map((emp) =>
-                <div className="employee-card" key={emp.id}>
-                    <div >
-                        <h3>{emp.name}</h3>
-                        <p>{emp.profession}</p>
-                    </div>
-                    <button onClick={() => deleteEmployee(emp.id)}>Delete</button>
-
-                    <button onClick={() => startEditing(emp)}>Edit</button>
-                </div>)}
+                <EmployeeCard key={emp.id} employee={emp} onDelete={deleteEmployee} onEdit={startEditing}></EmployeeCard>
+            )
+            }
             {editingId && <p>Editing employee ID: {editingId}</p>}
             {/* how to add with add button */}
             {/* <div>
@@ -150,7 +207,8 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
                 {error && <p>{error}</p>}
             </form>
 
-            {editingId &&
+            {
+                editingId &&
                 <form onSubmit={handleEdit}>
                     <input value={editName} onChange={(event) => setEditName(event.target.value)} ></input>
                     <input value={editProfession} onChange={(event) => setEditProfession(event.target.value)} ></input>
@@ -161,6 +219,11 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
                 </form>
             }
 
-        </div>
+            <button onClick={simulateLoading}>Simulate loading</button>
+
+            <button onClick={simulateError}>Simulate error</button>
+            {loading && <p>Loading employees...</p>}
+            {loadError && <p>{loadError}</p>}
+        </div >
     );
 }
