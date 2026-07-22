@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import './Profile.css'
 
 
-function EmployeeCard({ employee, onDelete, onEdit }) {
+function EmployeeCard({ employee, onDelete, onEdit, loading }) {
     return (
         <div className="employee-card" >
             <div >
                 <h3>{employee.name}</h3>
                 <p>{employee.profession}</p>
             </div>
-            <button onClick={() => onDelete(employee.id)}>Delete</button>
+            <button onClick={() => onDelete(employee.id)} disabled={loading}>Delete</button>
 
             <button onClick={() => onEdit(employee)}>Edit</button>
         </div>
@@ -269,10 +269,10 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
 
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search employees"></input>
 
-            {filteredEmployees.map((emp) =>
-                <EmployeeCard key={emp.id} employee={emp} onDelete={deleteEmployee} onEdit={startEditing}></EmployeeCard>
-            )
-            }
+            {filteredEmployees.length === 0 ? (<p>No employees found.</p>) : (filteredEmployees.map((emp) =>
+                <EmployeeCard key={emp.id} employee={emp} onDelete={deleteEmployee} onEdit={startEditing} loading={loading}></EmployeeCard>
+            ))}
+
             {editingId && <p>Editing employee ID: {editingId}</p>}
             {/* how to add with add button */}
             {/* <div>
@@ -287,7 +287,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
                 <input value={newName} onChange={(event) => setNewName
                     (event.target.value)}></input>
                 <input value={newProfession} onChange={(event) => setNewProfession(event.target.value)}></input>
-                <button type="submit">ADD</button>
+                <button type="submit" disabled={loading}> {loading ? "Adding..." : "Add"}</button>
                 {error && <p>{error}</p>}
             </form>
 
