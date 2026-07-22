@@ -76,19 +76,42 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
         setEditName("");
         setEditProfession("");
     }
-    function handleEdit(event) {
+    async function handleEdit(event) {
         event.preventDefault();
         if (editName.trim() === "" || editProfession.trim() === "") {
             return;
         }
+        try {
+            setLoadError("");
+            setLoading(true);
+            const updatedEmployee = await editEmployeeBackend(editingId, { name: editName, profession: editProfession })
+            setEmployees((prevEmp) => prevEmp.map((emp) => emp.id === editingId ? {
+                ...emp,
+                name: updatedEmployee.name,
+                profession: updatedEmployee.profession
+            } : emp));
+            cancelEditing();
+        } catch (error) { setLoadError(error.message); } finally { setLoading(false); }
 
-        setEmployees((prevEmp) => prevEmp.map((emp) => emp.id === editingId ? {
-            ...emp,
-            name: editName,
-            profession: editProfession
-        } : emp));
-        cancelEditing();
 
+    }
+
+    async function editEmployeeBackend(id, employee) {
+
+
+        const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
+            method: "PUT",
+            body: JSON.stringify(employee),
+            headers: {
+                "Content-Type": "application/json",
+            }
+        });
+        if (!response.ok) {
+            throw new Error("Failed to eit employee");
+        }
+
+
+        return await response.json();
     }
 
     function addEmployee(nname, nprofession) {
@@ -97,18 +120,58 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
         setNewName(''); setNewProfession('');
 
     }
-    function deleteEmployee(id) {
-        setEmployees((previousEmp => previousEmp.filter((emp) => emp.id !== id)));
+    async function addEmployeeBackend(nname, nprofession) {
+
+
+        try {
+            const savedEmployee = await addEmployeeToBackend({
+                name: nname,
+                profession: nprofession,
+            });
+            setEmployees((prevEmp) => [...prevEmp, savedEmployee]);
+            setNewName(''); setNewProfession('');
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+
+
+
     }
-    function handleSubmit(event) {
+    async function deleteEmployeeBackend(id) {
+
+        const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`,
+            {
+                method: "DELETE",
+            }
+        );
+        if (!response.ok) {
+            throw new Error("Failed to delete employee.");
+        }
+
+
+    }
+    async function deleteEmployee(id) {
+        setLoadError('');
+        setLoading(true);
+        try {
+            await deleteEmployeeBackend(id);
+            setEmployees((previousEmp => previousEmp.filter((emp) => emp.id !== id)));
+        } catch (error) { setLoadError(error.message); } finally { setLoading(false); }
+
+    }
+    async function handleSubmit(event) {
         event.preventDefault();
         if (newName.trim() === '' || newProfession.trim() === '') {
             setError('Please enter both name and profession.');
             return;
         }
 
-        setError('');
-        addEmployee(newName, newProfession);
+        setLoadError('');
+        setLoading(true);
+        //addEmployee(newName, newProfession);
+        await addEmployeeBackend(newName, newProfession);
     }
 
     //     A useful rule:
@@ -168,6 +231,26 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
         loadEmployees();
     }, []);
 
+
+    async function addEmployeeToBackend(employee) {
+
+        const response = await fetch("https://jsonplaceholder.typicode.com/users", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(employee),
+
+        });
+        if (!response.ok) {
+            throw new Error("Failed to add employee.")
+        }
+
+        return await response.json();
+    }
+
+
+
     return (
 
         <div>
@@ -199,6 +282,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
                 <button onClick={() => addEmployee(newName, newProfession)}>ADD</button>
             </div> */}
 
+            {/* add form */}
             <form onSubmit={handleSubmit}>
                 <input value={newName} onChange={(event) => setNewName
                     (event.target.value)}></input>
@@ -212,7 +296,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
                 <form onSubmit={handleEdit}>
                     <input value={editName} onChange={(event) => setEditName(event.target.value)} ></input>
                     <input value={editProfession} onChange={(event) => setEditProfession(event.target.value)} ></input>
-                    <button type="submit">Save</button>
+                    <button type="submit" disabled={loading}>{loading ? 'Saving' : 'Save'}</button>
                     <button type="button" onClick={cancelEditing}>
                         Cancel
                     </button>
