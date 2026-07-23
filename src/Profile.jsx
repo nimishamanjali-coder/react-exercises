@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import './Profile.css'
 import EmployeeCard from "./EmployeeCard";
-
+import {
+    getEmployees,
+    createEmployee,
+    updateEmployee,
+    removeEmployee
+} from "./services/employeeService";
 
 export default function Profile({ name, profession, yearsOfExperience, isAvailable }) {
 
@@ -75,7 +80,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
         try {
             setLoadError("");
             setEditingEmployee(true);
-            const updatedEmployee = await editEmployeeBackend(editingId, { name: editName, profession: editProfession })
+            const updatedEmployee = await updateEmployee(editingId, { name: editName.trim(), profession: editProfession.trim() })
             setEmployees((prevEmp) => prevEmp.map((emp) => emp.id === editingId ? {
                 ...emp,
                 name: updatedEmployee.name,
@@ -87,43 +92,22 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
 
     }
 
-    async function editEmployeeBackend(id, employee) {
 
 
-        const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
-            method: "PUT",
-            body: JSON.stringify(employee),
-            headers: {
-                "Content-Type": "application/json",
-            }
-        });
-        if (!response.ok) {
-            throw new Error("Failed to edit employee");
-        }
 
-
-        return await response.json();
-    }
-
-    function addEmployee(nname, nprofession) {
-
-        setEmployees((prevEmp) => [...prevEmp, { id: Date.now(), name: nname, profession: nprofession }]);
-        setNewName(''); setNewProfession('');
-
-    }
-    async function addEmployeeBackend(nname, nprofession) {
+    async function addEmployee(nname, nprofession) {
 
 
         try {
 
-            const savedEmployee = await addEmployeeToBackend({
+            const savedEmployee = await createEmployee({
                 name: nname,
                 profession: nprofession,
             });
             setEmployees((prevEmp) => [...prevEmp, savedEmployee]);
             setNewName(''); setNewProfession('');
         } catch (error) {
-            setError(error.message);
+            setLoadError(error.message);
         } finally {
             setAddingEmployee(false);
         }
@@ -131,24 +115,12 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
 
 
     }
-    async function deleteEmployeeBackend(id) {
 
-        const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`,
-            {
-                method: "DELETE",
-            }
-        );
-        if (!response.ok) {
-            throw new Error("Failed to delete employee.");
-        }
-
-
-    }
     async function deleteEmployee(id) {
         setLoadError('');
         setDeletingId(id);
         try {
-            await deleteEmployeeBackend(id);
+            await removeEmployee(id);
             setEmployees((previousEmp => previousEmp.filter((emp) => emp.id !== id)));
         } catch (error) { setLoadError(error.message); } finally { setDeletingId(null); }
 
@@ -163,7 +135,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
         setLoadError('');
         setAddingEmployee(true);
         //addEmployee(newName, newProfession);
-        await addEmployeeBackend(newName, newProfession);
+        await addEmployee(newName, newProfession);
     }
 
     //     A useful rule:
@@ -202,11 +174,9 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
             setLoading(true);
             setLoadError("");
             try {
-                const response = await fetch("https://jsonplaceholder.typicode.com/users");
-                if (!response.ok) {
-                    throw new Error("Failed to load employees.");
-                }
-                const data = await response.json();
+
+
+                const data = await getEmployees();
                 const convertedEmployees = data.map((user) => ({
                     id: user.id,
                     name: user.name,
@@ -222,24 +192,6 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
         }
         loadEmployees();
     }, []);
-
-
-    async function addEmployeeToBackend(employee) {
-
-        const response = await fetch("https://jsonplaceholder.typicode.com/users", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(employee),
-
-        });
-        if (!response.ok) {
-            throw new Error("Failed to add employee.")
-        }
-
-        return await response.json();
-    }
 
 
 
@@ -262,7 +214,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search employees"></input>
 
             {filteredEmployees.length === 0 ? (<p>No employees found.</p>) : (filteredEmployees.map((emp) =>
-                <EmployeeCard key={emp.id} employee={emp} onDelete={deleteEmployee} onEdit={startEditing} deleting={deletingId === emp.id} ></EmployeeCard>
+                <EmployeeCard key={emp.id} employee={emp} onDelete={deleteEmployee} onEdit={startEditing} deleting={deletingId === emp.id} />
             ))}
 
             {editingId && <p>Editing employee ID: {editingId}</p>}
