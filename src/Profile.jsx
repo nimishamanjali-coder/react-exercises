@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import './Profile.css'
 
 
-function EmployeeCard({ employee, onDelete, onEdit, loading }) {
+function EmployeeCard({ employee, onDelete, onEdit, deleting }) {
     return (
         <div className="employee-card" >
             <div >
                 <h3>{employee.name}</h3>
                 <p>{employee.profession}</p>
             </div>
-            <button onClick={() => onDelete(employee.id)} disabled={loading}>Delete</button>
+            <button onClick={() => onDelete(employee.id)} disabled={deleting}> {deleting ? "Deleting..." : "Delete"}</button>
 
             <button onClick={() => onEdit(employee)}>Edit</button>
         </div>
@@ -64,6 +64,9 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
     const [editProfession, setEditProfession] = useState('');
     const [loading, setLoading] = useState(false);
     const [loadError, setLoadError] = useState("");
+    const [addingEmployee, setAddingEmployee] = useState(false);
+    const [editingEmployee, setEditingEmployee] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
 
 
     function startEditing(emp) {
@@ -83,7 +86,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
         }
         try {
             setLoadError("");
-            setLoading(true);
+            setEditingEmployee(true);
             const updatedEmployee = await editEmployeeBackend(editingId, { name: editName, profession: editProfession })
             setEmployees((prevEmp) => prevEmp.map((emp) => emp.id === editingId ? {
                 ...emp,
@@ -91,7 +94,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
                 profession: updatedEmployee.profession
             } : emp));
             cancelEditing();
-        } catch (error) { setLoadError(error.message); } finally { setLoading(false); }
+        } catch (error) { setLoadError(error.message); } finally { setEditingEmployee(false); }
 
 
     }
@@ -107,7 +110,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
             }
         });
         if (!response.ok) {
-            throw new Error("Failed to eit employee");
+            throw new Error("Failed to edit employee");
         }
 
 
@@ -124,6 +127,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
 
 
         try {
+
             const savedEmployee = await addEmployeeToBackend({
                 name: nname,
                 profession: nprofession,
@@ -133,7 +137,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
         } catch (error) {
             setError(error.message);
         } finally {
-            setLoading(false);
+            setAddingEmployee(false);
         }
 
 
@@ -154,11 +158,11 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
     }
     async function deleteEmployee(id) {
         setLoadError('');
-        setLoading(true);
+        setDeletingId(id);
         try {
             await deleteEmployeeBackend(id);
             setEmployees((previousEmp => previousEmp.filter((emp) => emp.id !== id)));
-        } catch (error) { setLoadError(error.message); } finally { setLoading(false); }
+        } catch (error) { setLoadError(error.message); } finally { setDeletingId(null); }
 
     }
     async function handleSubmit(event) {
@@ -169,7 +173,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
         }
 
         setLoadError('');
-        setLoading(true);
+        setAddingEmployee(true);
         //addEmployee(newName, newProfession);
         await addEmployeeBackend(newName, newProfession);
     }
@@ -270,7 +274,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
             <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search employees"></input>
 
             {filteredEmployees.length === 0 ? (<p>No employees found.</p>) : (filteredEmployees.map((emp) =>
-                <EmployeeCard key={emp.id} employee={emp} onDelete={deleteEmployee} onEdit={startEditing} loading={loading}></EmployeeCard>
+                <EmployeeCard key={emp.id} employee={emp} onDelete={deleteEmployee} onEdit={startEditing} deleting={deletingId === emp.id} ></EmployeeCard>
             ))}
 
             {editingId && <p>Editing employee ID: {editingId}</p>}
@@ -287,7 +291,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
                 <input value={newName} onChange={(event) => setNewName
                     (event.target.value)}></input>
                 <input value={newProfession} onChange={(event) => setNewProfession(event.target.value)}></input>
-                <button type="submit" disabled={loading}> {loading ? "Adding..." : "Add"}</button>
+                <button type="submit" disabled={addingEmployee}> {addingEmployee ? "Adding..." : "Add"}</button>
                 {error && <p>{error}</p>}
             </form>
 
@@ -296,7 +300,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
                 <form onSubmit={handleEdit}>
                     <input value={editName} onChange={(event) => setEditName(event.target.value)} ></input>
                     <input value={editProfession} onChange={(event) => setEditProfession(event.target.value)} ></input>
-                    <button type="submit" disabled={loading}>{loading ? 'Saving' : 'Save'}</button>
+                    <button type="submit" disabled={editingEmployee}>{editingEmployee ? 'Saving' : 'Save'}</button>
                     <button type="button" onClick={cancelEditing}>
                         Cancel
                     </button>
