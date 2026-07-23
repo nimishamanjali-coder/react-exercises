@@ -1,5 +1,5 @@
-const BASE_URL = "https://jsonplaceholder.typicode.com/users";
-
+//const BASE_URL = "https://jsonplaceholder.typicode.com/users";
+const BASE_URL = "http://localhost:8080/api/employees";
 export async function getEmployees() {
     const response = await fetch(BASE_URL);
 
