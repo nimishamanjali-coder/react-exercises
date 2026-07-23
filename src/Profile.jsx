@@ -1,20 +1,8 @@
 import { useState, useEffect } from "react";
 import './Profile.css'
+import EmployeeCard from "./EmployeeCard";
 
 
-function EmployeeCard({ employee, onDelete, onEdit, deleting }) {
-    return (
-        <div className="employee-card" >
-            <div >
-                <h3>{employee.name}</h3>
-                <p>{employee.profession}</p>
-            </div>
-            <button onClick={() => onDelete(employee.id)} disabled={deleting}> {deleting ? "Deleting..." : "Delete"}</button>
-
-            <button onClick={() => onEdit(employee)}>Edit</button>
-        </div>
-    );
-}
 export default function Profile({ name, profession, yearsOfExperience, isAvailable }) {
 
     const [clicked, setClicked] = useState(0);
