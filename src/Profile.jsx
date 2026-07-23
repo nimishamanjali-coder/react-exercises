@@ -135,7 +135,7 @@ export default function Profile({ name, profession, yearsOfExperience, isAvailab
         setLoadError('');
         setAddingEmployee(true);
         //addEmployee(newName, newProfession);
-        await addEmployee(newName, newProfession);
+        await addEmployee(newName.trim(), newProfession.trim());
     }
 
     //     A useful rule:
